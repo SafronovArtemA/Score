@@ -18,8 +18,6 @@ def Score(sport="football", date=date):
     status_live = {'перерыв', '1-й тайм', '2-й тайм', '1-й период', '2-й период', '3-й период', 'овертайм',
                    '1-я четверть', '2-я четверть', '3-я четверть', '4-я четверть', '1-й перерыв', '2-й перерыв',
                    '3-й перерыв'}
-    # status_live_2 = set()
-    # total = 0
 
     for i in data:
         league = i.find("div", class_="se-competition-titled-block__title").text.strip()
@@ -53,18 +51,8 @@ def Score(sport="football", date=date):
                     if status in status_live:
                         league_information_live[league] = league_information.get(league, '') + \
                                                           f"{time} | {status}\n{team1}   {score}   {team2}\n"
-                    # status_live_2.add(status)
-                    # total += 1
 
             except:
                 continue
 
     return (league_information, league_information_live)
-
-
-# if __name__ == '__main__':
-#     print(Score(sport="handball", date='19-10-2022')[2])
-
-    # res = Score(sport="basketball")[0]
-    # for key in res:
-    #     print(key + '\n' + res[key])

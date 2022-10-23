@@ -5,6 +5,9 @@ from Results import Score
 from Token import TOKEN
 
 
+sport_dict = {}
+score_dict = {}
+
 bot = telebot.TeleBot(TOKEN)
 
 
@@ -33,18 +36,16 @@ def main(call):
         bot.send_message(call.message.chat.id, "Goodbye")
 
     elif call.data == "football" or call.data == "hockey" or call.data == "basketball" or call.data == "handball":
-        global sport
-        sport = call.data
+        sport_dict[call.message.chat.id] = call.data
         markup = types.InlineKeyboardMarkup()
         button1 = types.InlineKeyboardButton(text='Сегодня', callback_data="Today")
         markup.add(button1)
         bot.send_message(call.message.chat.id, "Введите дату в формате:\nДД-ММ-ГГГГ", reply_markup=markup)
 
     elif call.data == "Today":
-        global score
-        global score_live
         date = "-".join(reversed(str(datetime.datetime.now().date()).split("-")))
-        score, score_live = Score(sport=sport, date=date)
+        score, score_live = Score(sport=sport_dict[call.message.chat.id], date=date)
+        score_dict[call.message.chat.id] = (score, score_live)
         results = "Какая лига Вас интересует?"+ "\n" + "\n" + '\n'.join(score.keys())
         markup = types.InlineKeyboardMarkup()
         button1 = types.InlineKeyboardButton(text='Показать Live матчи', callback_data="Live")
@@ -53,8 +54,8 @@ def main(call):
 
     elif call.data == "Live":
         res_live = ''
-        for key in score_live.keys():
-            res_live += key + '\n' + '\n' + score_live[key] + '\n'
+        for key in score_dict[call.message.chat.id][1].keys():
+            res_live += key + '\n' + '\n' + score_dict[call.message.chat.id][1][key] + '\n'
         bot.send_message(call.message.chat.id, res_live)
 
 
@@ -69,15 +70,14 @@ def results(message):
         bot.send_message(message.chat.id, "Добрый день!\nПоказать результаты?", reply_markup=markup)
 
     elif len(message.text.split('-')) == 3 or len(message.text.split('.')) == 3:
-        global score
-        global score_live
         date = message.text if len(message.text.split('-')) == 3 else "-".join(message.text.split('.'))
-        score, score_live = Score(sport, date)
+        score, score_live = Score(sport=sport_dict[message.chat.id], date=date)
+        score_dict[message.chat.id] = (score, score_live)
         results = "Какая лига Вас интересует?"+ "\n" + "\n" + '\n'.join(score.keys())
         bot.send_message(message.chat.id, results)
 
-    elif message.text in score:
-        bot.send_message(message.chat.id, score[message.text])
+    elif message.text in score_dict[message.chat.id][0]:
+        bot.send_message(message.chat.id, score_dict[message.chat.id][0][message.text])
 
     else:
         bot.send_message(message.chat.id, "Такой лиги нет\nПопробуйте еще раз:")
